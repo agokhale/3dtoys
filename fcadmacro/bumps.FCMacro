@@ -1,0 +1,44 @@
+
+vec = App.Vector
+x_count = 3
+y_count = 8
+stride = 8 
+offset = 4
+radius= 2.5
+upvec = vec ( 0,0,1)
+
+
+doc = App.ActiveDocument
+bod = doc.addObject('PartDesign::Body','bumpy')
+
+sk = doc.addObject("Sketcher::SketchObject", "bumpy%iby%i"%(x_count,y_count))
+
+for x in range (0, x_count):
+	for y in range ( 0, y_count):
+		pt = vec(x*stride+offset, y*stride+offset)
+		c = sk.addGeometry(Part.Circle(pt, upvec, radius))
+		sk.addConstraint(Sketcher.Constraint("Block", c))
+
+southwest = vec(0,0)
+southeast= vec(x_count * stride,0)
+northwest= vec(0,y_count * stride)
+northeast= vec( x_count * stride, y_count * stride)
+
+skbox = doc.addObject("Sketcher::SketchObject", "boxforbumpy%iby%i"%(x_count,y_count))
+
+def liseg(sk_in,a,b):
+	bxseg = sk_in.addGeometry(Part.LineSegment(a, b))
+	sk_in.addConstraint(Sketcher.Constraint("Block", bxseg))
+		
+
+bxseg = skbox.addGeometry(Part.LineSegment(southwest, northwest))
+skbox.addConstraint(Sketcher.Constraint("Block", bxseg))
+bxseg = skbox.addGeometry(Part.LineSegment( northwest, northeast))
+skbox.addConstraint(Sketcher.Constraint("Block", bxseg))
+bxseg = skbox.addGeometry(Part.LineSegment( northeast, southeast))
+skbox.addConstraint(Sketcher.Constraint("Block", bxseg))
+bxseg = skbox.addGeometry(Part.LineSegment( southeast,southwest))
+skbox.addConstraint(Sketcher.Constraint("Block", bxseg))
+
+doc.recompute()
+				
